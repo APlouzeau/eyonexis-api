@@ -72,11 +72,12 @@ async fn main() {
 
     let app = Router::new()
         // AUTO-GENERATED-ROUTES
-        .nest("/api", folder_router::routes())
-        .nest("/api", note_router::routes())
+        .nest("/api/folders", folder_router::routes())
+        .nest("/api/notes", note_router::routes())
         .nest("/api", health_router::routes())
         .layer(cors)
         .with_state(state);
+
     let listener = TcpListener::bind("0.0.0.0:3001").await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }

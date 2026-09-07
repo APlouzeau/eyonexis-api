@@ -1,7 +1,7 @@
 use sqlx::{PgConnection, PgPool};
 use uuid::Uuid;
 
-use crate::features::note::model::{BlockType, CreateNoteBlockPayload, CreateNotePayload, NewNote, NoteBlock, NoteSummary, NoteToList, NoteToShow};
+use crate::features::note::model::{BlockType, CreateInitNoteData, CreateInitNotePayload, CreateNoteBlockPayload, CreateNotePayload, NewNote, NoteBlock, NoteSummary, NoteToList, NoteToShow};
 
 #[derive(Clone)]
 pub struct PostgresNoteRepository {
@@ -75,7 +75,7 @@ impl NoteRepository for PostgresNoteRepository {
         }
     }
 
-fn create_full_note(
+/* fn create_full_note(
     &self,
     id_new_note: &NewNote,
     new_note: &CreateNotePayload,
@@ -89,26 +89,25 @@ fn create_full_note(
             tx.commit().await?;
             Ok(())
         }
-    }
+    } */
 
     fn create_note(
-        conn: &mut PgConnection,
+        &self,
         id_new_note: &NewNote,
-        new_note: &CreateNotePayload,
+        new_note: &CreateInitNoteData,
     ) -> impl std::future::Future<Output = Result<(), sqlx::Error>> + Send {
         async move {
             sqlx::query!(
                 r#"
-            INSERT INTO notes (id_note, title, subtitle, slug, id_folder)
-            VALUES ($1, $2, $3, $4, $5)
+            INSERT INTO notes (id_note, title, slug, id_folder)
+            VALUES ($1, $2, $3, $4)
             "#,
                 id_new_note.id_note,
                 new_note.title,
-                new_note.subtitle,
                 new_note.slug,
                 new_note.id_folder
             )
-            .execute(conn)
+            .execute(&self.pool)
             .await?;
 
             Ok(())
@@ -150,15 +149,15 @@ pub trait NoteRepository {
         &self,
         id_note: Uuid,
     ) -> impl std::future::Future<Output = Result<NoteToShow, sqlx::Error>> + Send;
-    fn create_full_note(
+/*     fn create_full_note(
         &self,
         id_new_note: &NewNote,
         new_note: &CreateNotePayload,
-    ) -> impl std::future::Future<Output = Result<(), sqlx::Error>> + Send;
+    ) -> impl std::future::Future<Output = Result<(), sqlx::Error>> + Send; */
     fn create_note(
-        conn: &mut PgConnection,
+        &self,
         id_new_note : &NewNote,
-        new_note: &CreateNotePayload,
+        new_note: &CreateInitNoteData,
     ) -> impl std::future::Future<Output = Result<(), sqlx::Error>> + Send;
     fn insert_note_block(
         conn: &mut PgConnection,

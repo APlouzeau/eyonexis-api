@@ -30,6 +30,23 @@ run:
 	@echo "${GREEN}========================================================${NC}"
 	@echo "Astuce: N'oublie pas de lancer 'cargo run' dans un autre terminal pour l'API"
 
+dev:
+	@echo "${BLUE}🟢 Démarrage de l'environnement de développement...${NC}"
+	@docker compose -f $(ENV_TARGET) up --wait --build -d
+	@echo ""
+	@echo "${GREEN}========================================================${NC}"
+	@echo "${GREEN}🚀 Environnement prêt !${NC}"
+	@echo "${GREEN}========================================================${NC}"
+	@echo "⚙️  API DB Port  : ${YELLOW}${DB_PORT}${NC}"
+	@echo "🦀 Rust Server  : http://localhost:3001/api"
+	@echo "🩺 Health Check : http://localhost:3001/api/health"
+	@echo "${GREEN}========================================================${NC}"
+	@echo "${GREEN}🚀 Démarrage du serveur en mode watch... ${NC}"
+	systemfd --no-pid -s http::3001 -- cargo watch -x run
+	@echo "${GREEN}========================================================${NC}"
+	@echo "${GREEN}🚀 Serveur prêt !${NC}"
+	@echo "${GREEN}========================================================${NC}"
+
 down:
 	@echo "${RED}🔴 Arrêt de l'environnement Docker...${NC}"
 	@docker compose -f $(ENV_TARGET) down

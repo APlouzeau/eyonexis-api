@@ -23,6 +23,7 @@ pub async fn get_note_by_id(
     State(state): State<AppState>,
     Path(id_note): Path<Uuid>,
 ) -> Result<Json<NoteToShow>, AppError> {
+    println!("id folder : {}", id_note);
     let note = state.note_service.get_note_by_id(id_note).await?;
     Ok(Json(note))
 }

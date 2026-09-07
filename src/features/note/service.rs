@@ -1,6 +1,9 @@
+use slug::slugify;
 use uuid::Uuid;
 
-use crate::features::note::model::{CreateNotePayload, NewNote, NoteToList, NoteToShow};
+use crate::features::note::model::{
+    CreateInitNoteData, CreateInitNotePayload, CreateNotePayload, NewNote, NoteToList, NoteToShow,
+};
 
 use super::repository::NoteRepository;
 
@@ -20,12 +23,19 @@ impl<R: NoteRepository> NoteService<R> {
         Ok(note)
     }
 
-    pub async fn create(&self, new_note: &CreateNotePayload) -> Result<Uuid, sqlx::Error> {
+    pub async fn create(&self, new_note: &CreateInitNotePayload) -> Result<Uuid, sqlx::Error> {
         let id_new_note = NewNote {
             id_note: Uuid::new_v4(),
         };
+        let slug = slugify(&new_note.title);
+        let new_note_data = CreateInitNoteData {
+            id_note: id_new_note.id_note,
+            title: new_note.title.clone(),
+            id_folder: new_note.id_folder,
+            slug: slug,
+        };
         self.repository
-            .create_full_note(&id_new_note, &new_note)
+            .create_note(&id_new_note, &new_note_data)
             .await?;
 
         Ok(id_new_note.id_note)
@@ -70,6 +80,10 @@ mod tests {
             metadata: None,
         });
 
+        let new_note_data = CreateInitNotePayload {
+            title: "Test de note".to_string(),
+            id_folder: id_folder,
+        };
         let new_note = CreateNotePayload {
             title: "Test de note".to_string(),
             subtitle: Some("Ceci est un test".to_string()),
@@ -101,7 +115,7 @@ mod tests {
         .execute(&pool)
         .await?;
 
-        let id_note = state.test_service.create(&new_note).await?;
+        let id_note = state.test_service.create(&new_note_data).await?;
         let get_note = state.test_service.get_note_by_id(id_note).await?;
 
         assert_eq!(get_note.title, new_note.title);

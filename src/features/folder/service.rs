@@ -1,6 +1,6 @@
-use std::collections::HashMap;
-
+use capitalize::Capitalize;
 use slug::slugify;
+use std::collections::HashMap;
 use uuid::Uuid;
 
 use super::model::FolderNode;
@@ -44,7 +44,7 @@ impl<R: FolderRepository> FolderService<R> {
         let slug = slugify(&new_folder.folder_name);
         let new_folder_data = CreateFolderData {
             id_folder: Uuid::new_v4(),
-            folder_name: new_folder.folder_name.to_string(),
+            folder_name: new_folder.folder_name.capitalize().to_string(),
             folder_slug: slug,
             parent_id: new_folder.parent_id,
         };

@@ -90,3 +90,18 @@ pub struct CreateNotePayload {
     pub slug: String,
     pub blocks: Vec<CreateNoteBlockPayload>,
 }
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateInitNotePayload {
+    pub title: String,
+    pub id_folder: Uuid,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CreateInitNoteData {
+    pub id_note: Uuid,
+    pub title: String,
+    pub id_folder: Uuid,
+    pub slug: String,
+}
