@@ -20,7 +20,7 @@ impl FolderRepository for PostgresFolderRepository {
             let result = sqlx::query_as!(
             FolderBranch,
             r#"
-            SELECT f.id_folder as "id_folder: uuid::Uuid", f.folder_name, f.parent_id as "parent_id: uuid::Uuid"
+            SELECT f.id_folder as "id_folder: uuid::Uuid", f.folder_name, f.parent_id as "parent_id: uuid::Uuid", f.folder_slug
             FROM folders f
             "#
         )
@@ -54,6 +54,7 @@ impl FolderRepository for PostgresFolderRepository {
                 id_folder: new_folder.id_folder,
                 folder_name: new_folder.folder_name,
                 parent_id: new_folder.parent_id,
+                folder_slug: new_folder.folder_slug,
             };
 
             Ok(result)

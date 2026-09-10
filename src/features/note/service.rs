@@ -1,8 +1,12 @@
 use slug::slugify;
 use uuid::Uuid;
 
-use crate::features::note::model::{
-    CreateInitNoteData, CreateInitNotePayload, CreateNotePayload, NewNote, NoteToList, NoteToShow,
+use crate::{
+    error::AppError,
+    features::note::model::{
+        CreateInitNoteData, CreateInitNotePayload, CreateNotePayload, NewNote, NoteToList,
+        NoteToShow,
+    },
 };
 
 use super::repository::NoteRepository;
@@ -39,6 +43,16 @@ impl<R: NoteRepository> NoteService<R> {
             .await?;
 
         Ok(id_new_note.id_note)
+    }
+
+    pub async fn get_note_by_path(&self, path: Vec<&str>) -> Result<NoteToShow, AppError> {
+        let slug = path
+            .last()
+            .copied()
+            .ok_or_else(|| AppError::NotFound("Non autorisé".to_string()))?;
+        let candidates = self.repository.find_notes_by_slug(slug).await?;
+        let folders 
+        Ok()
     }
 
     /*     pub async fn delete(&self, id: DeleteNote) -> Result<Vec<NoteResponse>, sqlx::Error> {

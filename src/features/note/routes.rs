@@ -14,4 +14,5 @@ pub fn routes() -> Router<AppState> {
         )
         .route("/get-note/{id_note}", get(read::get_note_by_id))
         .route("/create", post(write::create))
+        .route("/show/{*note}", get(read::get_note_by_path))
 }

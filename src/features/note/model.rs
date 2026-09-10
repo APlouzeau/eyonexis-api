@@ -41,6 +41,7 @@ pub struct NoteToList {
     pub id: Uuid,
     pub title: String,
     pub subtitle: Option<String>,
+    pub slug: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -102,6 +103,13 @@ pub struct CreateInitNotePayload {
 pub struct CreateInitNoteData {
     pub id_note: Uuid,
     pub title: String,
+    pub id_folder: Uuid,
+    pub slug: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct NoteFromSlug {
+    pub id_note: Uuid,
     pub id_folder: Uuid,
     pub slug: String,
 }

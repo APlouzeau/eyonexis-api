@@ -1,7 +1,7 @@
 use sqlx::{PgConnection, PgPool};
 use uuid::Uuid;
 
-use crate::features::note::model::{BlockType, CreateInitNoteData, CreateInitNotePayload, CreateNoteBlockPayload, CreateNotePayload, NewNote, NoteBlock, NoteSummary, NoteToList, NoteToShow};
+use crate::features::note::model::{BlockType, CreateInitNoteData, CreateInitNotePayload, CreateNoteBlockPayload, CreateNotePayload, NewNote, NoteBlock, NoteFromSlug, NoteSummary, NoteToList, NoteToShow};
 
 #[derive(Clone)]
 pub struct PostgresNoteRepository {
@@ -17,7 +17,7 @@ impl NoteRepository for PostgresNoteRepository {
             let notes = sqlx::query_as!(
                 NoteToList,
                 r#"
-            SELECT id_note AS "id: uuid::Uuid", title, subtitle
+            SELECT id_note AS "id: uuid::Uuid", title, subtitle, slug
             FROM notes
             WHERE id_folder = $1
             "#,
@@ -114,6 +114,7 @@ impl NoteRepository for PostgresNoteRepository {
         }
     }
 
+    
     fn insert_note_block(
         conn: &mut PgConnection,
         id_note: &NewNote,
@@ -138,6 +139,25 @@ impl NoteRepository for PostgresNoteRepository {
         Ok(())
     }
     } 
+
+    fn find_notes_by_slug(
+        &self,
+        slug: &str
+    ) -> impl std::future::Future<Output = Result<Vec<NoteFromSlug>, sqlx::Error>> + Send {
+        async move {
+            let candidates = sqlx::query_as!(
+                NoteFromSlug,
+                r#"
+                SELECT id_note AS "id_note: uuid::Uuid", id_folder, slug 
+                FROM notes
+                WHERE slug = $1
+                "#,
+                slug
+            ).fetch_all(&self.pool).await?;
+
+            Ok(candidates)
+        }
+    }
 }
 
 pub trait NoteRepository {
@@ -149,11 +169,6 @@ pub trait NoteRepository {
         &self,
         id_note: Uuid,
     ) -> impl std::future::Future<Output = Result<NoteToShow, sqlx::Error>> + Send;
-/*     fn create_full_note(
-        &self,
-        id_new_note: &NewNote,
-        new_note: &CreateNotePayload,
-    ) -> impl std::future::Future<Output = Result<(), sqlx::Error>> + Send; */
     fn create_note(
         &self,
         id_new_note : &NewNote,
@@ -164,8 +179,8 @@ pub trait NoteRepository {
         id_note: &NewNote,
         note_block: &CreateNoteBlockPayload,
     ) -> impl std::future::Future<Output = Result<(), sqlx::Error>> + Send;
-    /*  fn delete(
+    fn find_notes_by_slug(
         &self,
-        note: DeleteNote,
-    ) -> impl std::future::Future<Output = Result<Vec<NoteDetail>, sqlx::Error>> + Send; */
+        slug: &str
+    ) -> impl std::future::Future<Output = Result<Vec<NoteFromSlug>, sqlx::Error>> + Send;
 } 

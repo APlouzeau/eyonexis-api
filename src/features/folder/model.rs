@@ -17,6 +17,7 @@ pub struct FolderBranch {
     pub id_folder: Uuid,
     pub folder_name: String,
     pub parent_id: Option<Uuid>,
+    pub folder_slug: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
