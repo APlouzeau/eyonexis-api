@@ -23,7 +23,6 @@ pub struct FolderBranch {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-
 pub struct CreateFolderPayload {
     pub folder_name: String,
     pub parent_id: Option<Uuid>,
@@ -31,7 +30,6 @@ pub struct CreateFolderPayload {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-
 pub struct FolderContent {
     pub id_folder: Uuid,
     pub folder_name: String,

@@ -1,11 +1,9 @@
-use crate::features::note::model::{BlockType::Heading, NoteBlock, NoteToList, NoteToShow};
+use crate::features::note::model::{NoteToList, NoteToShow};
 use axum::{
     extract::{Path, State},
     Json,
 };
 use axum_macros::debug_handler;
-use chrono::{DateTime, Local, Utc};
-use std::vec;
 
 use uuid::Uuid;
 

@@ -24,7 +24,7 @@ impl<R: FolderRepository> FolderService<R> {
         for folder in &folders {
             child_per_parent
                 .entry(folder.parent_id)
-                .or_insert_with(Vec::new)
+                .or_default()
                 .push(folder.clone())
         }
 
@@ -56,7 +56,7 @@ impl<R: FolderRepository> FolderService<R> {
         &self,
         parent_id: &Uuid,
     ) -> Result<Vec<FolderContent>, sqlx::Error> {
-        let folder_content = self.repository.get_folder_content(&parent_id).await?;
+        let folder_content = self.repository.get_folder_content(parent_id).await?;
         Ok(folder_content)
     }
 

@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Note {
+pub struct _Note {
     pub id_note: Uuid,
     pub title: String,
     pub subtitle: Option<String>,
@@ -22,7 +22,7 @@ pub struct NewNote {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct DeleteNote {
+pub struct _DeleteNote {
     pub id_note: Uuid,
 }
 
@@ -84,7 +84,7 @@ pub struct CreateNoteBlockPayload {
     pub metadata: Option<serde_json::Value>,
 }
 #[derive(Debug, Deserialize)]
-pub struct CreateNotePayload {
+pub struct _CreateNotePayload {
     pub title: String,
     pub subtitle: Option<String>,
     pub id_folder: Uuid,

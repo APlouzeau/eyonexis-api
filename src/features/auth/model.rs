@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
-pub struct Device {
+pub struct _Device {
     id_device: i32,
     device: String,
     token_hash: String,

@@ -2,9 +2,11 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::features::note::model::NoteBlock;
+
 #[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
 #[serde(rename_all = "camelCase")]
-pub struct NoteResponse {
+pub struct _NoteResponse {
     pub id_note: Uuid,
     pub title: String,
     pub subtitle: Option<String>,
@@ -16,10 +18,10 @@ pub struct NoteResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NoteBlock {
+pub struct _NoteBlock {
     pub id_note_block: Uuid,
     pub id_note: Uuid,
-    pub block_type: BlockType,
+    pub block_type: _BlockType,
     pub content: String,
     pub order_index: u32,
     pub metadata: Option<serde_json::Value>,
@@ -27,7 +29,7 @@ pub struct NoteBlock {
 
 #[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
 #[serde(rename_all = "camelCase")]
-pub struct NewNoteResponse {
+pub struct _NewNoteResponse {
     pub id_note: Uuid,
     pub title: String,
     pub subtitle: Option<String>,
@@ -40,7 +42,7 @@ pub struct NewNoteResponse {
 
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type, Copy)]
 #[sqlx(type_name = "block", rename_all = "lowercase")]
-pub enum BlockType {
+pub enum _BlockType {
     Text,
     Code,
     Heading,
@@ -49,24 +51,9 @@ pub enum BlockType {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NoteToListResponse {
+pub struct _NoteToListResponse {
     pub id: Uuid,
     pub note_title: String,
     pub note_folder_id: Uuid,
     pub note_subtitle: Option<String>,
 }
-
-/* impl From<NoteDetail> for NoteResponse {
-    fn from(note_detail: NoteDetail) -> Self {
-        NoteResponse {
-            id_note: note_detail.id_note,
-            title: note_detail.title,
-            subtitle: note_detail.subtitle,
-            slug: note_detail.slug,
-            id_folder: note_detail.id_folder,
-            blocks: note_detail.blocks,
-            created_at: note_detail.created_at,
-            updated_at: note_detail.update_at,
-        }
-    }
-} */

@@ -3,16 +3,13 @@ use crate::{
     features::{
         folder::repository::{FolderRepository, PostgresFolderRepository},
         note::{
-            model::{
-                CreateInitNoteData, CreateInitNotePayload, CreateNotePayload, NewNote, NoteToList,
-                NoteToShow,
-            },
+            model::{CreateInitNoteData, CreateInitNotePayload, NewNote, NoteToList, NoteToShow},
             FolderBranch,
         },
     },
 };
 use slug::slugify;
-use std::{collections::HashMap, sync::Arc};
+use std::collections::HashMap;
 use uuid::Uuid;
 
 use super::repository::NoteRepository;
@@ -26,7 +23,7 @@ pub struct NoteService<R: NoteRepository> {
 impl<R: NoteRepository> NoteService<R> {
     pub async fn list_by_folder(&self, id_folder: Uuid) -> Result<Vec<NoteToList>, sqlx::Error> {
         let notes = self.note_repository.list_by_folder(id_folder).await?;
-        Ok(notes.into_iter().map(NoteToList::from).collect())
+        Ok(notes.into_iter().collect())
     }
 
     pub async fn get_note_by_id(&self, id_note: Uuid) -> Result<NoteToShow, sqlx::Error> {
@@ -38,12 +35,12 @@ impl<R: NoteRepository> NoteService<R> {
         let id_new_note = NewNote {
             id_note: Uuid::new_v4(),
         };
-        let slug = slugify(&new_note.title);
+        let title_slug = slugify(&new_note.title);
         let new_note_data = CreateInitNoteData {
             id_note: id_new_note.id_note,
             title: new_note.title.clone(),
             id_folder: new_note.id_folder,
-            slug: slug,
+            slug: title_slug,
         };
         self.note_repository
             .create_note(&id_new_note, &new_note_data)
@@ -123,21 +120,20 @@ mod tests {
     use crate::features::note::{
         model::{
             BlockType::{Heading, Text},
-            CreateNoteBlockPayload,
+            CreateNoteBlockPayload, _CreateNotePayload,
         },
         repository::PostgresNoteRepository,
     };
 
     #[sqlx::test]
     async fn create_test(pool: PgPool) -> sqlx::Result<()> {
-        let id_folder = Uuid::new_v4();
-        let mut note_blocks = Vec::new();
-        note_blocks.push(CreateNoteBlockPayload {
+        let id_new_folder = Uuid::new_v4();
+        let mut note_blocks = vec![CreateNoteBlockPayload {
             block_type: Heading,
             content: "Titre de la section".to_string(),
             order_index: 1,
             metadata: None,
-        });
+        }];
         note_blocks.push(CreateNoteBlockPayload {
             block_type: Text,
             content: "Contenu de la section".to_string(),
@@ -147,12 +143,12 @@ mod tests {
 
         let new_note_data = CreateInitNotePayload {
             title: "Test de note".to_string(),
-            id_folder: id_folder,
+            id_folder: id_new_folder,
         };
-        let new_note = CreateNotePayload {
+        let new_note = _CreateNotePayload {
             title: "Test de note".to_string(),
             subtitle: None,
-            id_folder: id_folder,
+            id_folder: id_new_folder,
             slug: "test-de-note".to_string(),
             blocks: note_blocks,
         };
@@ -174,7 +170,7 @@ mod tests {
         (id_folder, folder_name, folder_slug)
         VALUES 
         ($1, $2, $3)"#,
-            id_folder,
+            id_new_folder,
             "Dossier de test",
             "dossier-de-test"
         )

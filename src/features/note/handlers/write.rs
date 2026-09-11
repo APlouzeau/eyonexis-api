@@ -3,12 +3,10 @@ use axum::Json;
 use uuid::Uuid;
 
 use crate::features::auth::authenticate_writer::ExtractAuthToken;
-use crate::features::note::model::{CreateInitNotePayload, CreateNotePayload};
+use crate::features::note::model::CreateInitNotePayload;
 
 use crate::error::AppError;
 use crate::AppState;
-
-pub struct NoteCreated;
 
 pub async fn create(
     State(state): State<AppState>,
