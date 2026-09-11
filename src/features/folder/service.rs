@@ -84,6 +84,7 @@ fn build_node(
     FolderNode {
         id_folder: folder.id_folder,
         folder_name: folder.folder_name,
+        folder_slug: folder.folder_slug,
         children,
         notes,
     }

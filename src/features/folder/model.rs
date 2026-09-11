@@ -8,6 +8,7 @@ use crate::features::folder::NoteToList;
 pub struct FolderNode {
     pub id_folder: Uuid,
     pub folder_name: String,
+    pub folder_slug: String,
     pub children: Vec<FolderNode>,
     pub notes: Vec<NoteToList>,
 }
