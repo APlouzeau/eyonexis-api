@@ -37,7 +37,7 @@ pub async fn get_note_by_path(
     let split_path: Vec<&str> = path.split('/').collect();
     println!("{:?}", split_path);
 
-    
+    let note = state.note_service.get_note_by_path(split_path).await?;
 
     let id_note = Uuid::new_v4();
     let id_block = Uuid::new_v4();

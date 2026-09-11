@@ -47,7 +47,8 @@ async fn main() {
 
     let state = AppState {
         note_service: NoteService {
-            repository: PostgresNoteRepository { pool: pool.clone() },
+            note_repository: PostgresNoteRepository { pool: pool.clone() },
+            folder_repository: PostgresFolderRepository { pool: pool.clone() },
         },
         folder_service: FolderService {
             repository: PostgresFolderRepository { pool: pool.clone() },

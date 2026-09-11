@@ -5,3 +5,5 @@ mod model_response;
 pub mod repository;
 pub mod routes;
 pub mod service;
+
+pub use super::folder::model::FolderBranch;

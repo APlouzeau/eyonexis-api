@@ -1,29 +1,36 @@
-use slug::slugify;
-use uuid::Uuid;
-
 use crate::{
     error::AppError,
-    features::note::model::{
-        CreateInitNoteData, CreateInitNotePayload, CreateNotePayload, NewNote, NoteToList,
-        NoteToShow,
+    features::{
+        folder::repository::{FolderRepository, PostgresFolderRepository},
+        note::{
+            model::{
+                CreateInitNoteData, CreateInitNotePayload, CreateNotePayload, NewNote, NoteToList,
+                NoteToShow,
+            },
+            FolderBranch,
+        },
     },
 };
+use slug::slugify;
+use std::{collections::HashMap, sync::Arc};
+use uuid::Uuid;
 
 use super::repository::NoteRepository;
 
 #[derive(Clone)]
 pub struct NoteService<R: NoteRepository> {
-    pub repository: R,
+    pub note_repository: R,
+    pub folder_repository: PostgresFolderRepository,
 }
 
 impl<R: NoteRepository> NoteService<R> {
     pub async fn list_by_folder(&self, id_folder: Uuid) -> Result<Vec<NoteToList>, sqlx::Error> {
-        let notes = self.repository.list_by_folder(id_folder).await?;
+        let notes = self.note_repository.list_by_folder(id_folder).await?;
         Ok(notes.into_iter().map(NoteToList::from).collect())
     }
 
     pub async fn get_note_by_id(&self, id_note: Uuid) -> Result<NoteToShow, sqlx::Error> {
-        let note = self.repository.get_note_by_id(id_note).await?;
+        let note = self.note_repository.get_note_by_id(id_note).await?;
         Ok(note)
     }
 
@@ -38,21 +45,65 @@ impl<R: NoteRepository> NoteService<R> {
             id_folder: new_note.id_folder,
             slug: slug,
         };
-        self.repository
+        self.note_repository
             .create_note(&id_new_note, &new_note_data)
             .await?;
 
         Ok(id_new_note.id_note)
     }
 
-    pub async fn get_note_by_path(&self, path: Vec<&str>) -> Result<NoteToShow, AppError> {
+    pub async fn get_note_by_path(&self, mut path: Vec<&str>) -> Result<NoteToShow, AppError> {
         let slug = path
             .last()
             .copied()
             .ok_or_else(|| AppError::NotFound("Non autorisé".to_string()))?;
-        let candidates = self.repository.find_notes_by_slug(slug).await?;
-        let folders 
-        Ok()
+        path.remove(path.len() - 1);
+        let candidates = self.note_repository.find_notes_by_slug(slug).await?;
+        let folders = self.folder_repository.get_folder_tree().await?;
+        println!("candidates : {:?}", candidates);
+        let mut folders_by_id: HashMap<Uuid, FolderBranch> = HashMap::new();
+
+        for folder in folders {
+            folders_by_id.insert(
+                folder.id_folder,
+                FolderBranch {
+                    id_folder: folder.id_folder,
+                    folder_name: folder.folder_name,
+                    parent_id: folder.parent_id,
+                    folder_slug: folder.folder_slug,
+                },
+            );
+        }
+
+        let mut notes: Vec<NoteToShow> = Vec::new();
+
+        for candidat in candidates {
+            let mut rebuild_path: Vec<String> = Vec::new();
+            let mut current_id_folder: Option<Uuid> = Some(candidat.id_folder);
+            while let Some(id) = current_id_folder {
+                let folder = folders_by_id
+                    .get(&id)
+                    .ok_or_else(|| AppError::NotFound("Dossier introuvable".to_string()))?;
+                rebuild_path.push(folder.folder_slug.clone());
+                current_id_folder = folder.parent_id;
+            }
+            rebuild_path.reverse();
+            if rebuild_path == path {
+                let note = self
+                    .note_repository
+                    .get_note_by_id(candidat.id_note)
+                    .await?;
+                notes.push(note);
+            }
+        }
+        println!("note trouvée : {:?}", notes);
+        match notes.len() {
+            0 => Err(AppError::NotFound("Aucun résultat trouve".to_string())),
+            1 => Ok(notes.remove(0)),
+            _ => Err(AppError::Unauthorized(
+                "Plusieurs résultats trouvés".to_string(),
+            )),
+        }
     }
 
     /*     pub async fn delete(&self, id: DeleteNote) -> Result<Vec<NoteResponse>, sqlx::Error> {
@@ -100,7 +151,7 @@ mod tests {
         };
         let new_note = CreateNotePayload {
             title: "Test de note".to_string(),
-            subtitle: Some("Ceci est un test".to_string()),
+            subtitle: None,
             id_folder: id_folder,
             slug: "test-de-note".to_string(),
             blocks: note_blocks,
@@ -112,7 +163,8 @@ mod tests {
 
         let state = AppState {
             test_service: NoteService {
-                repository: PostgresNoteRepository { pool: pool.clone() },
+                note_repository: PostgresNoteRepository { pool: pool.clone() },
+                folder_repository: PostgresFolderRepository { pool: pool.clone() },
             },
         };
 

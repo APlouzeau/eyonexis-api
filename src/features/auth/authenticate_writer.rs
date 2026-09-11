@@ -57,7 +57,7 @@ async fn from_request_parts_test(pool: PgPool) -> sqlx::Result<()> {
     .await?;
 
     let request = axum::http::Request::builder()
-        .header("authorization", format!("Bearer {}", "monbeautoken"))
+        .header("authorization", format!("Bearer {}", compare_hashed))
         .body(())
         .unwrap();
     let (mut parts, _body) = request.into_parts();
